@@ -1,0 +1,15 @@
+{
+  "params":{
+    "local_server": "True",
+    "local_uri": "mysql://root:@localhost/actecal",
+    "prod_uri": "mysql://user1:@localhost/actecal",
+    "tw_url": "https://twitter.com/?lang=en",
+    "fb_url": "https://www.facebook.com/Actecal/?ref=pages_you_manage",
+    "gi_url": "https://github.com/psonam50",
+    "blog": "My Actecl's Blog",
+    "contact": "contact us",
+    "about": "this blog is about technical issues",
+    "gmail-user": "",
+    "gmail-password": ""
+  }
+}
