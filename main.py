@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response, url_for
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 from datetime import datetime
@@ -15,7 +15,6 @@ app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT']= "465"
 app.config['MAIL_USERNAME']=params["gmail-user"]
 app.config['MAIL_PASSOWRD']=params["gmail-password"]
-app.config['MAIL_USE_TLS']=False
 app.config['MAIL_USE_SSL']=True
 mail= Mail(app)
 if local_server:
@@ -64,12 +63,18 @@ def index():
 
 @app.route('/about')
 def about():
-    return render_template('about.html', params=params)
+    return render_template('about.html')
 
 
 @app.route('/post')
 def post():
     return render_template('post.html', params=params)
+
+@app.route('/setcookie')
+def set():
+    resp = make_response(render_template('about.html'))
+    resp.set_cookie('cookie', 'flask')
+    return resp
 
 
 if __name__ == '__main__':
