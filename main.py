@@ -6,16 +6,20 @@ import json
 from flask_mail import Mail
 
 
+app = Flask(__name__)
+
 with open('config.json', 'r') as c:
     params = json.load(c)["params"]
-local_server = True
+local_server = params["local_server"]
 
-app = Flask(__name__)
+
+
 app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT']= "465"
-app.config['MAIL_USERNAME']=params["gmail-user"]
-app.config['MAIL_PASSOWRD']=params["gmail-password"]
-app.config['MAIL_USE_SSL']=True
+app.config['MAIL_PORT']= 465
+app.config['MAIL_USERNAME']= "actecalsales@gmail.com"
+app.config['MAIL_PASSWORD']="Buddy@2020"
+app.config['MAIL_USE_SSL']= True
+app.secret_key= 'be6d7dc1a115b49ab6de6ac2'
 mail= Mail(app)
 if local_server:
     app.config['SQLALCHEMY_DATABASE_URI'] = params['local_uri']
@@ -24,12 +28,12 @@ else:
 
 db=SQLAlchemy(app)
 
-class Contacts(db.Model):
+class ContactUs(db.Model):
     sno = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=False, nullable=False)
-    email = db.Column(db.String(20), unique=True, nullable=False)
-    phone_num = db.Column(db.String(13), unique=True, nullable=False)
-    msg = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(20), unique=False, nullable=False)
+    phone_num = db.Column(db.String(13), unique=False, nullable=False)
+    msg = db.Column(db.String(120), unique=False, nullable=False)
     date = db.Column(db.String(120))
 
 
@@ -40,18 +44,19 @@ def home():
 
 @app.route("/contact", methods=['POST', 'GET'])
 def contact():
-    if request.method=='POST':
+    if request.method == 'POST':
         name= request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone_num')
         message = request.form.get('message')
 
-        entry=Contacts(name=name, email=email, phone_num=phone, msg=message, date=datetime.date)
+
+        entry=ContactUs(name=name, email=email, phone_num=phone, msg=message, date=datetime.now())
         db.session.add(entry)
         db.session.commit()
-        mail.send_message("new message from"+name,
-                          sender="email",
-                          recipients=[params["gmail-user"]],
+        mail.send_message(
+                          sender=email,
+                          recipients=[app.config['MAIL_USERNAME']],
                           body=message
                           )
     return render_template('contact.html', params=params)
@@ -63,7 +68,7 @@ def index():
 
 @app.route('/about')
 def about():
-    return render_template('about.html')
+    return render_template('about.html', params=params)
 
 
 @app.route('/post')
@@ -98,5 +103,20 @@ def article():
 
     return render_template('article.html')
 
+
+@app.route('/show')
+def show_all():
+   return render_template('show_all.html', Contacts = ContactUs.query.all() )
+
+@app.route('/login')
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('psw')
+        message = request.form.get('message')
+
+    return render_template('login.html')
+
 if __name__ == '__main__':
-    app.run(debug=True, port=2000)
+    db.create_all()
+    app.run( debug=True)
